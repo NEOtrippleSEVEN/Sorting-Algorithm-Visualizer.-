@@ -53,7 +53,7 @@ def bar_len(val, min_v, max_v):
 		return BAR_MAX // 2
 	return max(1, int((val - min_v) / (max_v - min_v) * BAR_MAX))
 
-def draw(stdscr, state, step, total, min_v, max_v, scroll, playing):
+def draw(stdscr, state, step, total, min_v, max_v, scroll, playing, elapsed):
 	stdscr.erase()
 	h, w = stdscr.getmaxyx()
 	a, b, op = state['a'], state['b'], state['op']
@@ -65,6 +65,7 @@ def draw(stdscr, state, step, total, min_v, max_v, scroll, playing):
 		stdscr.addstr(0, 0, f" step {step:>5}/{total}", curses.A_BOLD)
 		stdscr.addstr(0, 14, f" {op:<5}", curses.color_pair(OP_COLORS.get(op, 7)) | curses.A_BOLD)
 		stdscr.addstr(0, 20, status, curses.A_DIM)
+		stdscr.addstr(0, 24, f" {elapsed:.1f}s", curses.A_DIM)
 	except curses.error:
 		pass
 
@@ -122,14 +123,16 @@ def main_loop(stdscr, states, min_v, max_v, delay):
 	stdscr.nodelay(True)
 	stdscr.keypad(True)
 
-	total     = len(states) - 1
-	step      = 0
-	scroll    = 0
-	playing   = True
-	last_tick = time.time()
+	total      = len(states) - 1
+	step       = 0
+	scroll     = 0
+	playing    = True
+	last_tick  = time.time()
+	start_time = time.time()
 
 	while True:
-		draw(stdscr, states[step], step, total, min_v, max_v, scroll, playing)
+		elapsed = time.time() - start_time
+		draw(stdscr, states[step], step, total, min_v, max_v, scroll, playing, elapsed)
 		key = stdscr.getch()
 
 		if key == ord('q'):
